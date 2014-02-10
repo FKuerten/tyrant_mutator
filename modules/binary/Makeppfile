@@ -1,6 +1,6 @@
 # Configuration section
 MODULE_NAME=
-DEPENDENCIES=basics
+DEPENDENCIES=basics core
 LIBS:=-lboost_program_options
 
 include scripts/objectsMakeppfile.mk

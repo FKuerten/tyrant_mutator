@@ -1,9 +1,12 @@
-#ifndef TYRANT_CACHE_CLI_RUNCOMMAND_HPP
-    #define TYRANT_CACHE_CLI_RUNCOMMAND_HPP
+#ifndef TYRANT_MUTATOR_CLI_RUNCOMMAND_HPP
+    #define TYRANT_MUTATOR_CLI_RUNCOMMAND_HPP
 
     #include "commands.h++"
     #include <memory>
+    #include "../mutator/mutator.h++"
+    #include "../mutator/mutationTask.h++"
 
+    using namespace Tyrant;
     namespace TyrantMutator {
         namespace CLI {
 
@@ -11,12 +14,9 @@
                 public:
                     typedef std::shared_ptr<RunCommand> Ptr;
                 public:
-                    C::SimulationTask task;
+                    Mutator::MutationTask task;
                 private:
-                    Cache::DiskBackedCache::Ptr simulator;
-                public:
-                    void setCacheWrite(bool cacheWrite);
-                    void setCacheRead(bool cacheRead);
+                    Mutator::Mutator::Ptr mutator;
                 public:
                     RunCommand(Configuration);
                     ~RunCommand();

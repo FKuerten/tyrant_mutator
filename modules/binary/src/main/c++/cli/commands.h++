@@ -1,9 +1,10 @@
-#ifndef TYRANT_CACHE_CLI_COMMANDS_HPP
-    #define TYRANT_CACHE_CLI_COMMANDS_HPP
+#ifndef TYRANT_MUTATOR_CLI_COMMANDS_HPP
+    #define TYRANT_MUTATOR_CLI_COMMANDS_HPP
 
     // for std::shared_ptr
     #include <memory>
     #include <boost/program_options/options_description.hpp>
+    #include "configuration.h++"
 
     namespace TyrantMutator {
         namespace CLI {

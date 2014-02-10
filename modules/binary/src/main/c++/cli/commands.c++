@@ -28,36 +28,29 @@ namespace TyrantMutator {
         {
             //human readable
             std::cout << "human readable version description:" << std::endl;
-            std::cout << "\t" << TYRANT_CACHE_VERSION_DESCRIBE;
-            if (TYRANT_CACHE_DIRTY_HEAD) {
+            std::cout << "\t" << TYRANT_MUTATOR_VERSION_DESCRIBE;
+            if (TYRANT_MUTATOR_DIRTY_HEAD) {
                 std::cout << "+";
-                std::cout << TYRANT_CACHE_DIRTY_HASH;
+                std::cout << TYRANT_MUTATOR_DIRTY_HASH;
             }
             std::cout << std::endl;
 
             // commit-ish
-            std::cout << "iteratedecks-cli3 version hash:" << std::endl;
-            std::cout << '\t' << TYRANT_CACHE_VERSION;
-            if (TYRANT_CACHE_DIRTY_HEAD) {
+            std::cout << "tyrantMutator version hash:" << std::endl;
+            std::cout << '\t' << TYRANT_MUTATOR_VERSION;
+            if (TYRANT_MUTATOR_DIRTY_HEAD) {
                 std::cout << "+";
-                std::cout << TYRANT_CACHE_DIRTY_HASH;
+                std::cout << TYRANT_MUTATOR_DIRTY_HASH;
             }
             std::cout << std::endl;
 
             // tags
-            if (!TYRANT_CACHE_DIRTY_HEAD) {
+            if (!TYRANT_MUTATOR_DIRTY_HEAD) {
                 std::cout << "Tags pointing at this version: " << std::endl;
-                std::cout << '\t' << TYRANT_CACHE_VERSION_TAGS << std::endl;
+                std::cout << '\t' << TYRANT_MUTATOR_VERSION_TAGS << std::endl;
             }
 
-            // TODO Obviously if we want to allow exchangable core we would need a better way here.
-            C::SimulatorCore::Ptr core = this->configuration.constructCore();
-
-            std::cout << "Simulator core name: "    << std::endl;
-            std::cout << '\t' << core->getCoreName()        << std::endl;
-            std::cout << "Simulator core version: " << std::endl;
-            std::cout << '\t' << core->getCoreVersion()     << std::endl;
-
+            /*
             std::cout << "XML data version: "       << std::endl;
             std::map<std::string,std::string> xmlHashes = core->getXMLVersions();
             assertGT(xmlHashes.size(),0u);
@@ -70,6 +63,7 @@ namespace TyrantMutator {
                 std::cout << std::setw(20) << std::left << iter->first << " ";
                 std::cout << iter->second << std::endl;
             }
+            */
             return 0;
         }
 
