@@ -39,5 +39,5 @@ target/tyrantMutator: $(infer_objects target/objects/cli/main.o++, ${OBJECTS}) $
 	       ${ALLLIBS} \
 	       -o ${output}
 
-target/dependencies:
+target/dependencies: ${DEPENDENCY_FILES}
     echo ${ALLLIBS} > ${output}

@@ -7,11 +7,11 @@
 
     namespace TyrantCache {
         namespace CLI {
-    
-            ::TyrantCache::Core::DeckTemplate::Ptr
+
+            ::Tyrant::Core::DeckTemplate::Ptr
             parseDeckFromStream(std::istream & is);
 
-            ::TyrantCache::Core::DeckTemplate::Ptr
+            ::Tyrant::Core::DeckTemplate::Ptr
             parseDeck(std::string deckDescription);
 
         }

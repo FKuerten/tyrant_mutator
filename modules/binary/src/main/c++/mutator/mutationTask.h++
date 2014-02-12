@@ -7,7 +7,7 @@
         namespace Mutator {
 
             struct MutationTask {
-                TyrantCache::Core::DeckTemplate::Ptr baseDeck;
+                Tyrant::Core::DeckTemplate::Ptr baseDeck;
             };
 
         }

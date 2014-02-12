@@ -5,11 +5,11 @@ namespace TyrantCache {
     namespace CLI {
 
         SimpleOrderedDeckTemplate::SimpleOrderedDeckTemplate(std::list<unsigned int> const & ids)
-        : DeckTemplate()
+        : StaticDeckTemplate()
         {
             std::list<unsigned int>::const_iterator iter = ids.begin();
             unsigned int const commanderId = *iter;
-            this->commander = commanderId;
+            this->commanderId = commanderId;
             for(iter++ ;iter != ids.end(); iter++) {
                 unsigned int cardId = *iter;
                 this->cards.push_back(cardId);
@@ -20,7 +20,7 @@ namespace TyrantCache {
         {
             std::stringstream ssString;
             ssString << "ORDERED_IDS:";
-            ssString << this->commander;
+            ssString << this->commanderId;
             for(std::list<unsigned int>::const_iterator iter = this->cards.begin()
                ;iter != this->cards.end()
                ;iter++
@@ -33,6 +33,6 @@ namespace TyrantCache {
         }
 
         CREATE_VISITOR_METHOD(SimpleOrderedDeckTemplate)
-        
+
     }
 }

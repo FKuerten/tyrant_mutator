@@ -7,7 +7,7 @@
     namespace Tyrant {
         namespace Mutator {
 
-            typedef std::set<TyrantCache::Core::DeckTemplate::Ptr> DeckSet;
+            typedef std::set<Tyrant::Core::DeckTemplate::Ptr> DeckSet;
 
             struct MutationResult {
                 DeckSet decks;

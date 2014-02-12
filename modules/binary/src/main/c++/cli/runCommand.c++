@@ -5,7 +5,7 @@
 #include <errorHandling/exceptions.h++>
 #include "../mutator/mutationResult.h++"
 
-namespace Core = TyrantCache::Core;
+namespace C = Tyrant::Core;
 namespace TyrantMutator {
     namespace CLI {
 
@@ -23,7 +23,7 @@ namespace TyrantMutator {
         int RunCommand::execute() {
             Mutator::MutationResult r = this->mutator->mutate(this->task);
 
-            for(Core::DeckTemplate::Ptr deck : r.decks) {
+            for(C::DeckTemplate::Ptr deck : r.decks) {
                 std::cout << std::string{*deck} << std::endl;
             }
             return 0;

@@ -11,11 +11,11 @@
 
 #include <iostream>
 
-namespace C = TyrantCache::Core;
+namespace C = Tyrant::Core;
 namespace TyrantCache {
     namespace CLI {
 
-        Core::DeckTemplate::Ptr
+        C::DeckTemplate::Ptr
         parseIdDeckFromStream
             (std::istream & is
             ,bool ordered = false
@@ -296,7 +296,7 @@ namespace TyrantCache {
             is.exceptions(oldExceptionState);
         }
 
-        ::TyrantCache::Core::DeckTemplate::Ptr
+        C::DeckTemplate::Ptr
         parseDeck(std::string deckDescription)
         {
             std::stringstream stream(deckDescription);
