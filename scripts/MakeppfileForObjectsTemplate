@@ -1,7 +1,0 @@
-.#PACKAGE#/%.o++: ../../src/main/c++#PACKAGE#/%.c++
-    @mkdir -p .#PACKAGE#
-    ${CXX} ${CPPFLAGS} ${CXXFLAGS} -c ${input} -o ${output}
-
-.#PACKAGE#/%.E++: ../../src/main/c++#PACKAGE#/%.c++
-    @mkdir -p .#PACKAGE#
-    ${CXX} ${CPPFLAGS} ${CXXFLAGS} -E -CC ${input} -o ${output}

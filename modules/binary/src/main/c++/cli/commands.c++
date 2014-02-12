@@ -28,26 +28,26 @@ namespace TyrantMutator {
         {
             //human readable
             std::cout << "human readable version description:" << std::endl;
-            std::cout << "\t" << TYRANT_MUTATOR_VERSION_DESCRIBE;
-            if (TYRANT_MUTATOR_DIRTY_HEAD) {
+            std::cout << "\t" << tyrantMutator_VERSION_DESCRIBE;
+            if (tyrantMutator_DIRTY_HEAD) {
                 std::cout << "+";
-                std::cout << TYRANT_MUTATOR_DIRTY_HASH;
+                std::cout << tyrantMutator_DIRTY_HASH;
             }
             std::cout << std::endl;
 
             // commit-ish
             std::cout << "tyrantMutator version hash:" << std::endl;
-            std::cout << '\t' << TYRANT_MUTATOR_VERSION;
-            if (TYRANT_MUTATOR_DIRTY_HEAD) {
+            std::cout << '\t' << tyrantMutator_VERSION;
+            if (tyrantMutator_DIRTY_HEAD) {
                 std::cout << "+";
-                std::cout << TYRANT_MUTATOR_DIRTY_HASH;
+                std::cout << tyrantMutator_DIRTY_HASH;
             }
             std::cout << std::endl;
 
             // tags
-            if (!TYRANT_MUTATOR_DIRTY_HEAD) {
+            if (!tyrantMutator_DIRTY_HEAD) {
                 std::cout << "Tags pointing at this version: " << std::endl;
-                std::cout << '\t' << TYRANT_MUTATOR_VERSION_TAGS << std::endl;
+                std::cout << '\t' << tyrantMutator_VERSION_TAGS << std::endl;
             }
 
             /*
