@@ -120,5 +120,21 @@ namespace TyrantCache {
             *iter = cardId;
             return copy;
         }
+
+        bool
+        operator< (SimpleOrderedDeckTemplate const & a
+                  ,SimpleOrderedDeckTemplate const & b
+                  )
+        {
+            if (a.commanderId < b.commanderId) {
+                return true;
+            } else if (a.commanderId > b.commanderId) {
+                return false;
+            } else {
+                assertEQ(a.commanderId, b.commanderId);
+                return a.cards < b.cards;
+            }
+        }
+
     }
 }

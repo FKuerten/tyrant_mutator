@@ -9,27 +9,112 @@
 #include <list>
 #include <set>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+#include "derefCompareLT.h++"
 
 namespace Tyrant {
     namespace Mutator {
 
         static size_t const DEFAULT_DECK_SIZE{10};
 
+        std::multiset<unsigned int> loadOwnedCards(std::string const & fileName)
+        {
+            std::multiset<unsigned int> cards;
+            //std::clog << "loading file " << fileName << std::endl;
+            std::ifstream is;
+            std::istream::iostate const oldExceptionFlags = is.exceptions();
+            is.exceptions(std::istream::failbit | std::istream::badbit);
+            try {
+                is.open(fileName);
+                //std::clog << "in loadOwnedCards:" << __LINE__ << std::endl;
+
+                std::string sRegex = R"(^\[(\d*)\] (.*) \((\d*)\)$)";
+                //std::clog << sRegex << std::endl;
+                boost::regex regex(sRegex);
+
+                std::string line;
+                while (std::getline(is, line)) {
+                    //std::clog << line << std::endl;
+                    boost::smatch match;
+                    if (boost::regex_match(line, match, regex)) {
+                        unsigned int const id = boost::lexical_cast<unsigned int>(match.str(1));
+                        std::string const name = match.str(2);
+                        size_t const count = boost::lexical_cast<unsigned int>(match.str(3));
+                        //std::clog << "Got card " << id << " x " << count << std::endl;
+                        for(size_t i = 0; i < count ; i++) {
+                            cards.insert(id);
+                        }
+                    } else {
+                        std::stringstream ssMessage;
+                        ssMessage << "Incorrect format for owned cards, should be ";
+                        ssMessage << sRegex;
+                        throw InvalidUserInputError(ssMessage.str());
+                    }
+                    is.peek();
+                    if (is.eof()) {
+                        break;
+                    }
+                }
+            } catch (std::ios_base::failure & e) {
+                std::stringstream ssMessage;
+                ssMessage << "Got am ios_base::failure with error code ";
+                 #if (__GNUC__ < 4) || ((__GNUC__ == 4) and (__GNUC_MINOR__ <= 8))
+                    ssMessage << "(broken gcc does not support new ios_base::failure yet)";
+                #else
+                    ssMessage << e.code();
+                #endif
+                ssMessage << std::endl;
+                if (!is.good()) {
+                    ssMessage << "with flags ";
+                    if (is.bad()) {
+                        ssMessage << "'bad' ";
+                    }
+                    if (is.fail()) {
+                        ssMessage << "'fail' ";
+                    }
+                    if (is.eof()) {
+                        ssMessage << "'eof' ";
+                    }
+                }
+                ssMessage << "and message: " << std::endl;
+                ssMessage << e.what();
+                throw Exception(ssMessage.str());
+            }
+            is.exceptions(oldExceptionFlags);
+            return cards;
+        }
+
         CardChangeMutator::CardChangeMutator()
         {
+            // Get a card database
             Core::Cards::Cards cards = Core::Cards::loadFromXMLFile("cards.xml");
+            this->initCardDB(cards);
+            std::multiset<unsigned int> ownedCards = loadOwnedCards("ownedcards.txt");
+            this->buildAllowedCards(ownedCards);
+        }
+
+        void
+        CardChangeMutator::initCardDB(Core::Cards::Cards const & cards)
+        {
             this->cardDB = cards;
-            for(auto pair: cards) {
-                Core::Cards::Card card = pair.second;
+        }
+
+        void
+        CardChangeMutator::buildAllowedCards(std::multiset<unsigned int> const & ownedCards)
+        {
+            for(unsigned int const cardId : ownedCards) {
+                Core::Cards::Card const card = this->cardDB[cardId];
                 if (card.type == Core::Cards::CardType::COMMANDER) {
                     this->allowedCommanders.insert(card.id);
                 } else {
                     this->allowedNonCommanderCards.insert(card.id);
                 }
             }
-            std::clog << this->allowedCommanders.size() << " "
-                      << this->allowedNonCommanderCards.size() << std::endl;
-            throw LogicError("Not implemented.");
+            //std::clog << this->allowedCommanders.size() << " "
+            //          << this->allowedNonCommanderCards.size() << std::endl;
         }
 
         static bool

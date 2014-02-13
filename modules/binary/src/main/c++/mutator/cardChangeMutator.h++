@@ -27,6 +27,9 @@
                     virtual void abort();
 
                 private:
+                    void initCardDB(Core::Cards::Cards const & cardDB);
+                    void buildAllowedCards(std::multiset<unsigned int> const & ownedCards);
+
                     void mutateOne(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
                     void mutateUnorder(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
                     void mutateChangeCommander(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);

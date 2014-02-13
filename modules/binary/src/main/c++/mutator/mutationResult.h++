@@ -3,11 +3,12 @@
 
     #include <set>
     #include <core/deckTemplate.h++>
+    #include "derefCompareLT.h++"
 
     namespace Tyrant {
         namespace Mutator {
 
-            typedef std::set<Tyrant::Core::DeckTemplate::Ptr> DeckSet;
+            typedef std::set<Tyrant::Core::DeckTemplate::Ptr, DerefCompareLT> DeckSet;
 
             struct MutationResult {
                 DeckSet decks;

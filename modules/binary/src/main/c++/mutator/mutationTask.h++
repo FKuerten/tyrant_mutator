@@ -11,6 +11,8 @@
                     Tyrant::Core::DeckTemplate::Ptr baseDeck;
                     unsigned int mutationLevel;
                     bool onlyAutoDecks;
+                    bool restrictToOwnedCards;
+                    unsigned int allowExtraCards;
 
                 public:
                     MutationTask();

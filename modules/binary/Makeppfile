@@ -1,7 +1,7 @@
 # Configuration section
 MODULE_NAME=tyrantMutator
 DEPENDENCIES=basics core
-LIBS:=-lboost_program_options -lpugixml
+LIBS:=-lboost_program_options -lpugixml -lboost_regex
 
 PROJECT_NAME=${MODULE_NAME}
 include scripts/objectsMakeppfile.mk
