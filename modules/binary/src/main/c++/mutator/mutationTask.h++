@@ -6,8 +6,23 @@
     namespace Tyrant {
         namespace Mutator {
 
-            struct MutationTask {
-                Tyrant::Core::DeckTemplate::Ptr baseDeck;
+            class MutationTask {
+                public:
+                    Tyrant::Core::DeckTemplate::Ptr baseDeck;
+                    unsigned int mutationLevel;
+                    bool onlyAutoDecks;
+
+                public:
+                    MutationTask();
+
+                    bool mutateUnorder() const;
+                    bool mutateChangeCommander() const;
+                    bool mutateRemoveCard() const;
+                    bool mutateAddCard() const;
+                    bool mutateSwapCard() const;
+                    bool mutateReplaceCard() const;
+                    bool mutateOrder() const;
+
             };
 
         }
