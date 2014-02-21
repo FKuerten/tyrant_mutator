@@ -1,7 +1,5 @@
-# Configuration section
-MODULE_NAME=tyrantMutator
-DEPENDENCIES=basics core
-LIBS:=-lboost_program_options -lpugixml -lboost_regex
+MODULEDIR=.
+include config.mk
 
 PROJECT_NAME=${MODULE_NAME}
 include scripts/objectsMakeppfile.mk
@@ -10,11 +8,6 @@ include scripts/version.mk
 $(phony FORCE):
     @true
 
-global CXXFLAGS+= --std=c++11
-global CPPFLAGS:=${CPPFLAGS} -I${CURDIR}/target/generated
-
-
-CPPFLAGS+=-I${CURDIR}/../${DEPENDENCIES}/src/main/c++/
 LIBS+=$(addprefix -l,${DEPENDENCIES})
 LDFLAGS+=-L${CURDIR}/../${DEPENDENCIES}/target/
 OWN_LIB_FILES=$(shell ./scripts/expandModules.sh ${DEPENDENCIES})
