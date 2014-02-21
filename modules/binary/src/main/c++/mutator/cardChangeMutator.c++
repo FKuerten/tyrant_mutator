@@ -187,6 +187,13 @@ namespace Tyrant {
         MutationResult
         CardChangeMutator::mutate(MutationTask const & task)
         {
+            class Generator {
+                private: // variable
+                    CardChangeMutator::Ptr mutator;
+
+
+            };
+
             // We only mutate certain deck types
             if (Core::StaticDeckTemplate::ConstPtr baseDeck = std::dynamic_pointer_cast<Core::StaticDeckTemplate const>(task.baseDeck)) {
                 DeckSet mutations;
