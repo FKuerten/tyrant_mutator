@@ -46,5 +46,19 @@ namespace Tyrant {
             return this->mutationLevel >= 7;
         }
 
+        bool operator==(MutationTask const & lhs, MutationTask const & rhs)
+        {
+            return lhs.baseDeck             == rhs.baseDeck
+                && lhs.mutationLevel        == rhs.mutationLevel
+                && lhs.onlyAutoDecks        == rhs.onlyAutoDecks
+                && lhs.restrictToOwnedCards == rhs.restrictToOwnedCards
+                && lhs.allowExtraCards      == rhs.allowExtraCards;
+        }
+
+        bool operator!=(MutationTask const & lhs, MutationTask const & rhs)
+        {
+            return !(lhs == rhs);
+        }
+
     }
 }

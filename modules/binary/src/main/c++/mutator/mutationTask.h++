@@ -25,7 +25,11 @@
                     bool mutateReplaceCard() const;
                     bool mutateOrder() const;
 
+                friend bool operator==(MutationTask const & lhs, MutationTask const & rhs);
             };
+
+            bool operator==(MutationTask const & lhs, MutationTask const & rhs);
+            bool operator!=(MutationTask const & lhs, MutationTask const & rhs);
 
         }
     }

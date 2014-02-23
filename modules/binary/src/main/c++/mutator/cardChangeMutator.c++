@@ -36,13 +36,14 @@ namespace Tyrant {
                 //std::clog << "CCM::mutate() commanders: " << this->allowedCommanders.size() << std::endl;
                 Ptr thisPtr = shared_from_this();
                 CardChangeMutatorGenerator<SCDeckSet::const_iterator> generator(thisPtr, task, input.cbegin(), input.cend());
+                CardChangeMutatorGenerator<SCDeckSet::const_iterator> end(thisPtr, task, input.cend(), input.cend());
                 //std::clog << "after constructing generator" << std::endl;
                 //std::clog.flush();
                 CDeckSet mutations;
-                while(generator.hasNext()) {
+                while(generator != end) {
                     //std::clog << "get item ...";
                     //std::clog.flush();
-                    Core::DeckTemplate::ConstPtr mutation = generator();
+                    Core::DeckTemplate::ConstPtr mutation = *generator;
                     //std::clog << " got item ... ";
                     //std::clog << std::string(*mutation);
                     //std::clog << " inserting ...";
@@ -51,6 +52,7 @@ namespace Tyrant {
                     //std::clog << " done.";
                     //std::clog << std::endl;
                     //std::clog.flush();
+                    ++generator;
                 }
                 MutationResult result;
                 result.decks = mutations;

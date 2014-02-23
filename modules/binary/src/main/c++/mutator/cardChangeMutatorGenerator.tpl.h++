@@ -98,7 +98,6 @@ namespace Tyrant {
                                 this->_hasNext = true;
                                 return;
                             } else {
-                                std::clog << "invalid" << std::endl;
                                 this->stage1Iter++;
                                 break;
                             }
@@ -296,6 +295,7 @@ namespace Tyrant {
             } // while
         }
 
+        /*
         template<class Iterator>
         typename CardChangeMutatorGenerator<Iterator>::result_type
         CardChangeMutatorGenerator<Iterator>::operator()()
@@ -315,6 +315,112 @@ namespace Tyrant {
         CardChangeMutatorGenerator<Iterator>::hasNext() const
         {
             return this->_hasNext;
+        }
+        */
+
+        template <class Iterator>
+        CardChangeMutatorGenerator<Iterator> &
+        CardChangeMutatorGenerator<Iterator>::operator++()
+        {
+            this->findNext();
+            return *this;
+        }
+
+        template <class Iterator>
+        CardChangeMutatorGenerator<Iterator> const
+        CardChangeMutatorGenerator<Iterator>::operator++(int)
+        {
+            CardChangeMutatorGenerator copy(*this);
+            ++(*this);
+            return copy;
+        }
+
+        template <class Iterator>
+        typename CardChangeMutatorGenerator<Iterator>::result_type
+        CardChangeMutatorGenerator<Iterator>::operator*() const
+        {
+            return this->nextResult;
+        }
+
+        template <class Iterator>
+        bool
+        operator==(CardChangeMutatorGenerator<Iterator> const & lhs, CardChangeMutatorGenerator<Iterator> const & rhs)
+        {
+            // need to be same mutator
+            if (lhs.mutator != rhs.mutator) {
+                return false;
+            }
+            // need to be same task
+            if (lhs.task != rhs.task) {
+                return false;
+            }
+            // different endstatus?
+            if (lhs._hasNext != rhs._hasNext) {
+                return false;
+            } else if (!lhs._hasNext) {
+                // both at end
+                return true;
+            }
+            // both are not at end
+            // different iteration?
+            if (lhs.sourceEnd != rhs.sourceEnd) {
+                return false;
+            } else if (lhs.sourceCurrent != rhs.sourceCurrent) {
+                return false;
+            }
+            // iteration is same
+            if (lhs.stage0 != rhs.stage0) {
+                return false;
+            }
+            // same element and same stage... now depends on actual stage
+            switch(lhs.stage0) {
+                case CardChangeMutatorGenerator<Iterator>::SETUP:
+                case CardChangeMutatorGenerator<Iterator>::UNORDER:
+                case CardChangeMutatorGenerator<Iterator>::REMOVE_CARD_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::ADD_CARD_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::SWAP_CARD_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::REPLACE_CARD_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::ORDER:
+                    // should never stop in these with _hasNext true
+                    assertX(false);
+                case CardChangeMutatorGenerator<Iterator>::CHANGE_COMMANDER_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::STEP:
+                    return true;
+                case CardChangeMutatorGenerator<Iterator>::CHANGE_COMMANDER_EXECUTION:
+                case CardChangeMutatorGenerator<Iterator>::ADD_CARD_UNORDERED_EXECUTION:
+                case CardChangeMutatorGenerator<Iterator>::ADD_CARD_ORDERED_SETUP:
+                case CardChangeMutatorGenerator<Iterator>::REPLACE_CARD_EXECUTION_1:
+                    assertX(lhs.stage1IterEnd == rhs.stage1IterEnd);
+                    return lhs.stage1Iter == rhs.stage1Iter;
+                case CardChangeMutatorGenerator<Iterator>::REMOVE_CARD_EXECUTION:
+                case CardChangeMutatorGenerator<Iterator>::SWAP_CARD_EXECUTION_1:
+                    assertEQ(lhs.stage1NumberEnd, rhs.stage1NumberEnd);
+                    return lhs.stage1Number == rhs.stage1Number;
+                case CardChangeMutatorGenerator<Iterator>::ADD_CARD_ORDERED_EXECUTION:
+                case CardChangeMutatorGenerator<Iterator>::REPLACE_CARD_EXECUTION_2:
+                    assertX(lhs.stage1IterEnd == rhs.stage1IterEnd);
+                    if (lhs.stage1Iter != rhs.stage1Iter) {
+                        return false;
+                    }
+                    assertEQ(lhs.stage2NumberEnd, rhs.stage2NumberEnd);
+                    return lhs.stage2Number == rhs.stage2Number;
+                case CardChangeMutatorGenerator<Iterator>::SWAP_CARD_EXECUTION_2:
+                    assertEQ(lhs.stage1NumberEnd, rhs.stage1NumberEnd);
+                    if (lhs.stage1Number != rhs.stage1Number) {
+                        return false;
+                    }
+                    assertEQ(lhs.stage2NumberEnd, rhs.stage2NumberEnd);
+                    return lhs.stage2Number == rhs.stage2Number;
+                default:
+                    assertX(false);
+            }
+        }
+
+        template <class Iterator>
+        bool
+        operator!=(CardChangeMutatorGenerator<Iterator> const & lhs, CardChangeMutatorGenerator<Iterator> const & rhs)
+        {
+            return !(lhs == rhs);
         }
     }
 }

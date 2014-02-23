@@ -20,6 +20,7 @@
                     CardChangeMutator();
                     virtual ~CardChangeMutator();
                     virtual MutationResult mutate(MutationTask const & task);
+
                     virtual void abort();
 
                 template<class Iterator>
