@@ -8,10 +8,11 @@
     namespace Tyrant {
         namespace Mutator {
 
-            typedef std::set<Tyrant::Core::DeckTemplate::Ptr, DerefCompareLT> DeckSet;
+            typedef std::set<::Tyrant::Core::DeckTemplate::Ptr, DerefCompareLT> DeckSet;
+            typedef std::set<::Tyrant::Core::DeckTemplate::ConstPtr, DerefCompareLT> CDeckSet;
 
             struct MutationResult {
-                DeckSet decks;
+                CDeckSet decks;
             };
 
         }

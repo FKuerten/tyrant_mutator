@@ -1,18 +1,13 @@
 #include "cardChangeMutator.h++"
 #include <errorHandling/assert.h++>
 #include <errorHandling/exceptions.h++>
-#include <core/autoDeckTemplate.h++>
 #include <core/cards/cardLoader.h++>
-#include "../cli/simpleOrderedDeckTemplate.h++"
 // for dynamic_pointer_cast
 #include <memory>
 #include <list>
 #include <set>
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
 #include "derefCompareLT.h++"
 
 namespace Tyrant {
@@ -20,184 +15,389 @@ namespace Tyrant {
 
         static size_t const DEFAULT_DECK_SIZE{10};
 
-        std::multiset<unsigned int> loadOwnedCards(std::string const & fileName)
-        {
-            std::multiset<unsigned int> cards;
-            //std::clog << "loading file " << fileName << std::endl;
-            std::ifstream is;
-            std::istream::iostate const oldExceptionFlags = is.exceptions();
-            is.exceptions(std::istream::failbit | std::istream::badbit);
-            try {
-                is.open(fileName);
-                //std::clog << "in loadOwnedCards:" << __LINE__ << std::endl;
-
-                std::string sRegex = R"(^\[(\d*)\] (.*) \((\d*)\)$)";
-                //std::clog << sRegex << std::endl;
-                boost::regex regex(sRegex);
-
-                std::string line;
-                while (std::getline(is, line)) {
-                    //std::clog << line << std::endl;
-                    boost::smatch match;
-                    if (boost::regex_match(line, match, regex)) {
-                        unsigned int const id = boost::lexical_cast<unsigned int>(match.str(1));
-                        std::string const name = match.str(2);
-                        size_t const count = boost::lexical_cast<unsigned int>(match.str(3));
-                        //std::clog << "Got card " << id << " x " << count << std::endl;
-                        for(size_t i = 0; i < count ; i++) {
-                            cards.insert(id);
-                        }
-                    } else {
-                        std::stringstream ssMessage;
-                        ssMessage << "Incorrect format for owned cards, should be ";
-                        ssMessage << sRegex;
-                        throw InvalidUserInputError(ssMessage.str());
-                    }
-                    is.peek();
-                    if (is.eof()) {
-                        break;
-                    }
-                }
-            } catch (std::ios_base::failure & e) {
-                std::stringstream ssMessage;
-                ssMessage << "Got am ios_base::failure with error code ";
-                 #if (__GNUC__ < 4) || ((__GNUC__ == 4) and (__GNUC_MINOR__ <= 8))
-                    ssMessage << "(broken gcc does not support new ios_base::failure yet)";
-                #else
-                    ssMessage << e.code();
-                #endif
-                ssMessage << std::endl;
-                if (!is.good()) {
-                    ssMessage << "with flags ";
-                    if (is.bad()) {
-                        ssMessage << "'bad' ";
-                    }
-                    if (is.fail()) {
-                        ssMessage << "'fail' ";
-                    }
-                    if (is.eof()) {
-                        ssMessage << "'eof' ";
-                    }
-                }
-                ssMessage << "and message: " << std::endl;
-                ssMessage << e.what();
-                throw Exception(ssMessage.str());
-            }
-            is.exceptions(oldExceptionFlags);
-            return cards;
-        }
-
         CardChangeMutator::CardChangeMutator()
         {
-            // Get a card database
-            Core::Cards::Cards cards = Core::Cards::loadFromXMLFile("cards.xml");
-            this->initCardDB(cards);
-            std::multiset<unsigned int> ownedCards = loadOwnedCards("ownedcards.txt");
-            this->buildAllowedCards(ownedCards);
+            //std::clog << "CCM::CCM() commanders: " << this->allowedCommanders.size() << std::endl;
         }
-
-        void
-        CardChangeMutator::initCardDB(Core::Cards::Cards const & cards)
-        {
-            this->cardDB = cards;
-        }
-
-        void
-        CardChangeMutator::buildAllowedCards(std::multiset<unsigned int> const & ownedCards)
-        {
-            for(unsigned int const cardId : ownedCards) {
-                Core::Cards::Card const card = this->cardDB[cardId];
-                if (card.type == Core::Cards::CardType::COMMANDER) {
-                    this->allowedCommanders.insert(card.id);
-                } else {
-                    this->allowedNonCommanderCards.insert(card.id);
-                }
-            }
-            //std::clog << this->allowedCommanders.size() << " "
-            //          << this->allowedNonCommanderCards.size() << std::endl;
-        }
-
-        static bool
-        isOrdered(Core::StaticDeckTemplate const & deck)
-        {
-            // dirty code
-            if (dynamic_cast<Core::AutoDeckTemplate const *>(&deck) != NULL) {
-                return false;
-            } else if (dynamic_cast<TyrantCache::CLI::SimpleOrderedDeckTemplate const *>(&deck) != NULL) {
-                return true;
-            } else {
-                assertX(false);
-                return true;
-            }
-        }
-
-        static Core::AutoDeckTemplate::Ptr
-        asUnordered(Core::StaticDeckTemplate const & orig)
-        {
-            std::list<unsigned int> cards;
-            cards.push_back(orig.getCommanderId());
-            for(size_t i = 0; i < orig.getNumberOfNonCommanderCards(); i++) {
-                cards.push_back(orig.getCardIdAtIndex(i));
-            }
-            return Core::AutoDeckTemplate::Ptr(new Core::AutoDeckTemplate(cards));
-        }
-
-        static TyrantCache::CLI::SimpleOrderedDeckTemplate::Ptr
-        asOrdered(Core::StaticDeckTemplate const & orig)
-        {
-            std::list<unsigned int> cards;
-            cards.push_back(orig.getCommanderId());
-            for(size_t i = 0; i < orig.getNumberOfNonCommanderCards(); i++) {
-                cards.push_back(orig.getCardIdAtIndex(i));
-            }
-            return TyrantCache::CLI::SimpleOrderedDeckTemplate::Ptr(
-                new TyrantCache::CLI::SimpleOrderedDeckTemplate(cards)
-            );
-        }
-
-        template <class T>
-        bool isSubSet(std::multiset<T> const & sub
-                     ,std::multiset<T> copyOfSuper
-                     ,unsigned int allowUpToExtra = 0
-                     )
-        {
-            for(auto iter = sub.begin()
-               ;iter != sub.end()
-               ;iter++)
-            {
-                auto superIter = copyOfSuper.find(*iter);
-                if(superIter == copyOfSuper.end()) {
-                    if(allowUpToExtra > 0) {
-                        allowUpToExtra--;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    copyOfSuper.erase(superIter);
-                }
-            }
-            return true;
-        }
-
 
         CardChangeMutator::~CardChangeMutator()
         {
         }
 
+        template <class Iterator>
+        class Generator {
+            public: // types
+                enum Stages {
+                    SETUP,
+                    UNORDER,
+                    CHANGE_COMMANDER_SETUP,
+                    CHANGE_COMMANDER_EXECUTION,
+                    REMOVE_CARD_SETUP,
+                    REMOVE_CARD_EXECUTION,
+                    ADD_CARD_SETUP,
+                    ADD_CARD_UNORDERED_EXECUTION,
+                    ADD_CARD_ORDERED_SETUP,
+                    ADD_CARD_ORDERED_EXECUTION,
+                    SWAP_CARD_SETUP,
+                    SWAP_CARD_EXECUTION_1,
+                    SWAP_CARD_EXECUTION_2,
+                    REPLACE_CARD_SETUP,
+                    REPLACE_CARD_EXECUTION_1,
+                    REPLACE_CARD_EXECUTION_2,
+                    ORDER,
+                    STEP,
+                };
+
+                typedef Core::DeckTemplate::Ptr result_type;
+            private: // variable
+                CardChangeMutator::ConstPtr mutator;
+                MutationTask const task;
+                Iterator sourceCurrent;
+                Iterator const sourceEnd;
+
+                Stages stage0;
+                std::set<unsigned int>::const_iterator stage1Iter;
+                std::set<unsigned int>::const_iterator stage1IterEnd;
+                unsigned int stage1Number;
+                unsigned int stage1NumberEnd;
+                unsigned int stage2Number;
+                unsigned int stage2NumberEnd;
+
+                result_type nextResult;
+                bool _hasNext;
+
+            private: // methods
+                void findNext();
+
+            public: // methods
+                Generator(CardChangeMutator::ConstPtr mutator
+                         ,MutationTask const & task
+                         ,Iterator const & sourceBegin
+                         ,Iterator const & sourceEnd
+                         );
+
+                result_type operator()();
+                bool hasNext() const;
+
+        };
+
+        template <class Iterator>
+        Generator<Iterator>::Generator(CardChangeMutator::ConstPtr mutator
+                            ,MutationTask const & task
+                            ,Iterator const & sourceBegin
+                            ,Iterator const & sourceEnd
+                            )
+        : mutator(mutator)
+        , task(task)
+        , sourceCurrent(sourceBegin)
+        , sourceEnd(sourceEnd)
+        , stage0(SETUP)
+        {
+            //std::clog << "commanders: " << mutator->allowedCommanders.size() << std::endl;
+            this->findNext();
+        }
+
+        template <class Iterator>
+        void
+        Generator<Iterator>::findNext()
+        {
+            while (true) {
+                Core::StaticDeckTemplate const & currentBaseDeck = **(this->sourceCurrent);
+                switch(this->stage0) {
+                    case SETUP: // setup
+                        //std::clog << "stage0 == SETUP" << std::endl;
+                        if (this->sourceCurrent == this->sourceEnd) {
+                            this->_hasNext = false;
+                            return;
+                        } else {
+                            this->stage0 = UNORDER;
+                        }
+                    case UNORDER: // unorder
+                        //std::clog << "stage0 == UNORDER" << std::endl;
+                        if (this->task.mutateUnorder() && this->mutator->isOrdered(currentBaseDeck)) {
+                            Core::StaticDeckTemplate::Ptr mutation = this->mutator->asUnordered(currentBaseDeck);
+                            this->stage0 = CHANGE_COMMANDER_SETUP;
+                            this->nextResult = mutation;
+                            this->_hasNext = true;
+                            return;
+                        } else {
+                            this->stage0 = CHANGE_COMMANDER_SETUP;
+                        }
+                    case CHANGE_COMMANDER_SETUP: // change commander: setup
+                        //std::clog << "stage0 == CHANGE_COMMANDER_SETUP" << std::endl;
+                        if (this->task.mutateChangeCommander()) {
+                            //std::clog << "change commander setup" << std::endl;
+                            this->stage1Iter = this->mutator->allowedCommanders.cbegin();
+                            this->stage1IterEnd = this->mutator->allowedCommanders.cend();
+                            //std::clog << "commanders: " << this->mutator->allowedCommanders.size() << std::endl;
+                            this->stage0 = CHANGE_COMMANDER_EXECUTION;
+                        } else {
+                            this->stage0 = REMOVE_CARD_SETUP;
+                            break;
+                        }
+                    case CHANGE_COMMANDER_EXECUTION: // change commander: execution
+                        //std::clog << "stage0 == CHANGE_COMMANDER_EXECUTION" << std::endl;
+                        assertX(this->task.mutateChangeCommander());
+                        if (this->stage1Iter != this->stage1IterEnd) {
+                            unsigned int const commanderId = *(this->stage1Iter);
+                            //std::clog << "change commander: " << commanderId << std::endl;
+                            Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withCommander(commanderId);
+                            //std::clog << "mutation generated " << std::string(*mutation) << std::endl;
+                            if(this->mutator->isValid(*mutation) && this->mutator->canCompose(*mutation)) {
+                                this->stage1Iter++;
+                                this->nextResult = mutation;
+                                this->_hasNext = true;
+                                return;
+                            } else {
+                                std::clog << "invalid" << std::endl;
+                                this->stage1Iter++;
+                                break;
+                            }
+                        } else {
+                            this->stage0 = REMOVE_CARD_SETUP;
+                        }
+                    case REMOVE_CARD_SETUP: // remove card: setup
+                        //std::clog << "stage0 == REMOVE_CARD_SETUP" << std::endl;
+                        if (this->task.mutateRemoveCard()) {
+                            this->stage1Number = 0;
+                            this->stage1NumberEnd = currentBaseDeck.getNumberOfNonCommanderCards();
+                            this->stage0 = REMOVE_CARD_EXECUTION;
+                        } else {
+                            this->stage0 = ADD_CARD_SETUP;
+                            break;
+                        }
+                    case REMOVE_CARD_EXECUTION: // remove card: execution
+                        assertX(this->task.mutateRemoveCard());
+                        if (this->stage1Number != this->stage1NumberEnd) {
+                            unsigned int const i = this->stage1Number;
+                            Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withoutCardAtIndex(i);
+                            this->stage1Number++;
+                            this->nextResult = mutation;
+                            this->_hasNext = true;
+                            return;
+                        } else {
+                            this->stage0 = ADD_CARD_SETUP;
+                        }
+                    case ADD_CARD_SETUP: // add card: setup
+                        //std::clog << "stage0 == ADD_CARD_SETUP" << std::endl;
+                        if (this->task.mutateAddCard() && currentBaseDeck.getNumberOfNonCommanderCards() < DEFAULT_DECK_SIZE) {
+                            this->stage1Iter = this->mutator->allowedNonCommanderCards.cbegin();
+                            this->stage1IterEnd = this->mutator->allowedNonCommanderCards.cend();
+                            if(this->mutator->isOrdered(currentBaseDeck)) {
+                                this->stage2NumberEnd = currentBaseDeck.getNumberOfNonCommanderCards() + 1;
+                                this->stage0 = ADD_CARD_ORDERED_SETUP;
+                                break;
+                            } else {
+                                this->stage0 = ADD_CARD_UNORDERED_EXECUTION;
+                                break;
+                            }
+                        } else {
+                            this->stage0 = SWAP_CARD_SETUP;
+                            break;
+                        }
+                    case ADD_CARD_UNORDERED_EXECUTION: // add card: execution
+                        assertX(this->task.mutateAddCard() && currentBaseDeck.getNumberOfNonCommanderCards() < DEFAULT_DECK_SIZE);
+                        if (this->stage1Iter != this->stage1IterEnd) {
+                            unsigned int const cardId = *this->stage1Iter;
+                            Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withCard(cardId);
+                            if(this->mutator->isValid(*mutation) && this->mutator->canCompose(*mutation)) {
+                                this->stage1Iter++;
+                                this->nextResult = mutation;
+                                this->_hasNext = true;
+                                return;
+                            } else {
+                                this->stage1Iter++;
+                                break;
+                            }
+                        } else {
+                            this->stage0 = SWAP_CARD_SETUP;
+                            break;
+                        }
+                    case ADD_CARD_ORDERED_SETUP:
+                        assertX(this->task.mutateAddCard() && currentBaseDeck.getNumberOfNonCommanderCards() < DEFAULT_DECK_SIZE);
+                        if (this->stage1Iter != this->stage1IterEnd) {
+                            this->stage2Number = 0;
+                            this->stage0 = ADD_CARD_ORDERED_EXECUTION;
+                            break;
+                        } else {
+                            this->stage0 = SWAP_CARD_SETUP;
+                            break;
+                        }
+                    case ADD_CARD_ORDERED_EXECUTION:
+                        assertX(this->task.mutateAddCard() && currentBaseDeck.getNumberOfNonCommanderCards() < DEFAULT_DECK_SIZE);
+                        if (this->stage1Iter != this->stage1IterEnd) {
+                            if (this->stage2Number != this->stage2NumberEnd) {
+                                unsigned int const cardId = *this->stage1Iter;
+                                unsigned int i = this->stage2Number;
+                                Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withCardAtIndex(cardId, i);
+                                if(this->mutator->isValid(*mutation) && this->mutator->canCompose(*mutation)) {
+                                    this->stage2Number++;
+                                    this->nextResult = mutation;
+                                    this->_hasNext = true;
+                                    return;
+                                } else {
+                                    this->stage2Number++;
+                                    break;
+                                }
+                            } else {
+                                this->stage1Iter++;
+                                this->stage0 = ADD_CARD_ORDERED_SETUP;
+                                break;
+                            }
+                        } else {
+                            this->stage0 = SWAP_CARD_SETUP;
+                        }
+                    case SWAP_CARD_SETUP:
+                        //std::clog << "stage0 == SWAP_CARD_SETUP" << std::endl;
+                        if (this->task.mutateAddCard() && this->mutator->isOrdered(currentBaseDeck)) {
+                            this->stage1Number = 0;
+                            this->stage1NumberEnd = currentBaseDeck.getNumberOfNonCommanderCards() - 1;
+                            this->stage2NumberEnd = currentBaseDeck.getNumberOfNonCommanderCards();
+                            this->stage0 = SWAP_CARD_EXECUTION_1;
+                        } else {
+                            this->stage0 = REPLACE_CARD_SETUP;
+                            break;
+                        }
+                    case SWAP_CARD_EXECUTION_1:
+                        assertX(this->task.mutateAddCard() && this->mutator->isOrdered(currentBaseDeck));
+                        if (this->stage1Number != this->stage1NumberEnd) {
+                            this->stage2Number = this->stage1Number + 1;
+                            this->stage0 = SWAP_CARD_EXECUTION_2;
+                        } else {
+                            this->stage0 = REPLACE_CARD_SETUP;
+                            break;
+                        }
+                    case SWAP_CARD_EXECUTION_2:
+                        assertX(this->task.mutateAddCard() && this->mutator->isOrdered(currentBaseDeck));
+                        assertX(this->stage1Number != this->stage1NumberEnd);
+                        if (this->stage2Number != this->stage2NumberEnd) {
+                            unsigned int const i = this->stage1Number;
+                            unsigned int const j = this->stage2Number;
+                            assertLT(i,j);
+                            Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withSwappedCards(i,j);
+                            this->stage2Number++;
+                            this->nextResult = mutation;
+                            this->_hasNext = true;
+                            return;
+                        } else {
+                            this->stage1Number++;
+                            this->stage0 = SWAP_CARD_EXECUTION_1;
+                            break;
+                        }
+                    case REPLACE_CARD_SETUP:
+                        //std::clog << "stage0 == REPLACE_CARD_SETUP" << std::endl;
+                        if (this->task.mutateReplaceCard()) {
+                            this->stage1Iter = this->mutator->allowedNonCommanderCards.cbegin();
+                            this->stage1IterEnd = this->mutator->allowedNonCommanderCards.cend();
+                            this->stage2NumberEnd = currentBaseDeck.getNumberOfNonCommanderCards();
+                            this->stage0 = REPLACE_CARD_EXECUTION_1;
+                        } else {
+                            this->stage0 = ORDER;
+                            break;
+                        }
+                    case REPLACE_CARD_EXECUTION_1:
+                        //std::clog << "stage0 == REPLACE_CARD_EXECUTION_1 " << *(this->stage1Iter) << std::endl;
+                        assertX(this->task.mutateReplaceCard());
+                        if (this->stage1Iter != this->stage1IterEnd) {
+                            this->stage2Number = 0;
+                            this->stage0 = REPLACE_CARD_EXECUTION_2;
+                        } else {
+                            this->stage0 = ORDER;
+                            break;
+                        }
+                    case REPLACE_CARD_EXECUTION_2:
+                        //std::clog << "stage0 == REPLACE_CARD_EXECUTION_2 " << this->stage2Number << std::endl;
+                        assertX(this->task.mutateReplaceCard());
+                        assertX(this->stage1Iter != this->stage1IterEnd);
+                        if (this->stage2Number != this->stage2NumberEnd) {
+                            unsigned int const cardId = *this->stage1Iter;
+                            unsigned int i = this->stage2Number;
+                            Core::StaticDeckTemplate::Ptr mutation = currentBaseDeck.withReplacedCardAtIndex(cardId, i);
+                            if(this->mutator->isValid(*mutation) && this->mutator->canCompose(*mutation)) {
+                                this->stage2Number++;
+                                this->nextResult = mutation;
+                                this->_hasNext = true;
+                                return;
+                            } else {
+                                this->stage2Number++;
+                                break;
+                            }
+                        } else {
+                            this->stage1Iter++;
+                            this->stage0 = REPLACE_CARD_EXECUTION_1;
+                            break;
+                        }
+                    case ORDER:
+                        //std::clog << "stage0 == ORDER" << std::endl;
+                        if (this->task.mutateUnorder() && !this->mutator->isOrdered(currentBaseDeck)) {
+                            Core::StaticDeckTemplate::Ptr mutation = this->mutator->asOrdered(currentBaseDeck);
+                            this->stage0 = STEP;
+                            this->nextResult = mutation;
+                            this->_hasNext = true;
+                            return;
+                        } else {
+                            this->stage0 = STEP;
+                        }
+                    case STEP:
+                        //std::clog << "stage0 == STEP" << std::endl;
+                        this->sourceCurrent++;
+                        this->stage0 = SETUP;
+                        break;
+                } // switch stage0
+            } // while
+        }
+
+        template<class Iterator>
+        typename Generator<Iterator>::result_type
+        Generator<Iterator>::operator()()
+        {
+            assertX(this->_hasNext);
+            result_type result = this->nextResult;
+            //std::clog << "before findNext() ";
+            //std::clog.flush();
+            this->findNext();
+            //std::clog << "after findNext() ";
+            //std::clog.flush();
+            return result;
+        }
+
+        template<class Iterator>
+        bool
+        Generator<Iterator>::hasNext() const
+        {
+            return this->_hasNext;
+        }
+
+
         MutationResult
         CardChangeMutator::mutate(MutationTask const & task)
         {
-            class Generator {
-                private: // variable
-                    CardChangeMutator::Ptr mutator;
-
-
-            };
-
             // We only mutate certain deck types
             if (Core::StaticDeckTemplate::ConstPtr baseDeck = std::dynamic_pointer_cast<Core::StaticDeckTemplate const>(task.baseDeck)) {
-                DeckSet mutations;
-                this->mutateOne(task, *baseDeck, mutations);
+                typedef std::set<Core::StaticDeckTemplate::ConstPtr> SCDeckSet;
+                SCDeckSet input;
+                input.insert(baseDeck);
+                //std::clog << "before constructing generator" << std::endl;
+                //std::clog.flush();
+                //std::clog << "CCM::mutate() commanders: " << this->allowedCommanders.size() << std::endl;
+                Ptr thisPtr = shared_from_this();
+                Generator<SCDeckSet::const_iterator> generator(thisPtr, task, input.cbegin(), input.cend());
+                //std::clog << "after constructing generator" << std::endl;
+                //std::clog.flush();
+                CDeckSet mutations;
+                while(generator.hasNext()) {
+                    //std::clog << "get item ...";
+                    //std::clog.flush();
+                    Core::DeckTemplate::ConstPtr mutation = generator();
+                    //std::clog << " got item ... ";
+                    //std::clog << std::string(*mutation);
+                    //std::clog << " inserting ...";
+                    //std::clog.flush();
+                    mutations.insert(mutation);
+                    //std::clog << " done.";
+                    //std::clog << std::endl;
+                    //std::clog.flush();
+                }
                 MutationResult result;
                 result.decks = mutations;
                 return result;
@@ -210,237 +410,6 @@ namespace Tyrant {
         CardChangeMutator::abort()
         {
             throw LogicError("Not implemented.");
-        }
-
-        void
-        CardChangeMutator::mutateOne(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations)
-        {
-            if (task.mutateUnorder()) {
-                this->mutateUnorder(task, baseDeck, mutations);
-            }
-            if (task.mutateChangeCommander()) {
-                this->mutateChangeCommander(task, baseDeck, mutations);
-            }
-            if (task.mutateRemoveCard()) {
-                this->mutateRemoveCard(task, baseDeck, mutations);
-            }
-            if (task.mutateAddCard()) {
-                this->mutateAddCard(task, baseDeck, mutations);
-            }
-            if (task.mutateSwapCard()) {
-                this->mutateSwapCard(task, baseDeck, mutations);
-            }
-            if (task.mutateReplaceCard()) {
-                this->mutateReplaceCard(task, baseDeck, mutations);
-            }
-            if (task.mutateOrder()) {
-                this->mutateOrder(task, baseDeck, mutations);
-            }
-        }
-
-        void
-        CardChangeMutator::mutateUnorder(MutationTask const & task
-                                        ,Core::StaticDeckTemplate const & baseDeck
-                                        ,DeckSet & mutations
-                                        )
-        {
-            if(isOrdered(baseDeck)) {
-                Core::StaticDeckTemplate::Ptr mutation = asUnordered(baseDeck);
-                mutations.insert(mutation);
-            }
-        }
-
-        void
-        CardChangeMutator::mutateChangeCommander(MutationTask const & task
-                                                ,Core::StaticDeckTemplate const & baseDeck
-                                                ,DeckSet & mutations
-                                                )
-        {
-            for(unsigned int commanderId: this->allowedCommanders)
-            {
-
-                Core::StaticDeckTemplate::Ptr mutation = baseDeck.withCommander(commanderId);
-                if(isValid(*mutation) && canCompose(*mutation)) {
-                    mutations.insert(mutation);
-                }
-            }
-
-        }
-
-        void
-        CardChangeMutator::mutateRemoveCard(MutationTask const & task
-                                           ,Core::StaticDeckTemplate const & baseDeck
-                                           ,DeckSet & mutations
-                                           )
-        {
-            size_t const numberOfCards = baseDeck.getNumberOfNonCommanderCards();
-            for(size_t i = 0; i < numberOfCards; i++) {
-                Core::StaticDeckTemplate::Ptr mutation = baseDeck.withoutCardAtIndex(i);
-                mutations.insert(mutation);
-            }
-
-        }
-
-        void
-        CardChangeMutator::mutateAddCard(MutationTask const & task
-                                        ,Core::StaticDeckTemplate const & baseDeck
-                                        ,DeckSet & mutations
-                                        )
-        {
-            size_t const numberOfCards = baseDeck.getNumberOfNonCommanderCards();
-            if (numberOfCards < DEFAULT_DECK_SIZE) {
-                // consider all possible cards
-                for(unsigned int cardId: this->allowedNonCommanderCards)
-                {
-                    if(!isOrdered(baseDeck)) {
-                        Core::StaticDeckTemplate::Ptr mutation = baseDeck.withCard(cardId);
-                        // check for validity and can compose
-                        if(this->isValid(*mutation) && this->canCompose(*mutation)) {
-                            mutations.insert(mutation);
-                        }
-                    } else {
-                        for(unsigned int i = 0; i <= numberOfCards; i++) {
-                            Core::StaticDeckTemplate::Ptr mutation = baseDeck.withCardAtIndex(cardId, i);
-                            if(this->isValid(*mutation) && this->canCompose(*mutation)) {
-                                mutations.insert(mutation);
-                            }
-                        }
-                    } // (un)ordered
-                }
-            }
-            //std::clog << "\t\tfound " << std::setw(5) << count << " add card mutations." << std::endl;
-
-        }
-
-        void
-        CardChangeMutator::mutateSwapCard(MutationTask const & task
-                                         ,Core::StaticDeckTemplate const & baseDeck
-                                         ,DeckSet & mutations
-                                         )
-        {
-            if (isOrdered(baseDeck) && !(task.onlyAutoDecks)) {
-                size_t const numberOfCards = baseDeck.getNumberOfNonCommanderCards();
-                for(unsigned int i = 0; i+1 < numberOfCards; i++) {
-                    for(unsigned int j = i+1; j < numberOfCards; j++) {
-                        Core::StaticDeckTemplate::Ptr mutation = baseDeck.withSwappedCards(i,j);
-                        mutations.insert(mutation);
-                    } // for j
-                } // for i
-            }
-
-        }
-
-        void
-        CardChangeMutator::mutateReplaceCard(MutationTask const & task
-                                            ,Core::StaticDeckTemplate const & baseDeck
-                                            ,DeckSet & mutations
-                                            )
-        {
-            size_t const numberOfCards = baseDeck.getNumberOfNonCommanderCards();
-            for(size_t i = 0; i < numberOfCards; i++) {
-                 // consider all possible cards
-                for(unsigned int const cardId: this->allowedNonCommanderCards)
-                {
-                    // replace
-                    Core::StaticDeckTemplate::Ptr mutation = baseDeck.withReplacedCardAtIndex(cardId, i);
-
-                    // check for validity
-                    if(!this->isValid(*mutation)) {
-                        //std::clog << "Invalid" << std::endl;
-                        //std::clog << mutation << std::endl;
-                        //std::clog << "-------" << std::endl;
-                        continue;
-                    }
-                    // can compose?
-                    if(!this->canCompose(*mutation)) {
-                        //std::clog << "Can not compose" << std::endl;
-                        //std::clog << mutation << std::endl;
-                        //std::clog << "-------" << std::endl;
-                        continue;
-                    }
-
-                    //std::clog << mutation << std::endl;
-                    mutations.insert(mutation);
-
-                    if (this->aborted) {
-                        throw AbortionException("During replace mutations.");
-                    }
-                } // for
-            }
-
-        }
-
-        void
-        CardChangeMutator::mutateOrder(MutationTask const & task
-                                      ,Core::StaticDeckTemplate const & baseDeck
-                                      ,DeckSet & mutations
-                                      )
-        {
-            if(!isOrdered(baseDeck) && !(task.onlyAutoDecks)) {
-                #if 0
-                    //std::clog << "ordering..." << std::endl;
-                    // compute all orders... thats gonna be a lot
-                    PCardList const emptyList;
-                    PCardMSet const cards = original.getMCards();
-                    PCardListSet permutations;
-                    generatePermutations(emptyList, cards, permutations);
-                    for(PCardListSet::const_iterator iter = permutations.begin()
-                       ;iter != permutations.end()
-                       ;iter++)
-                    {
-                        PCardList permutation = *iter;
-                        Deck mutation(original.getCommander(), permutation, true);
-                        //std::clog << mutation << std::endl;
-                        mutations.insert(mutation);
-                    }
-                #else
-                    Core::StaticDeckTemplate::Ptr mutation = asOrdered(baseDeck);
-                    mutations.insert(mutation);
-                #endif
-            }
-
-        }
-
-        bool
-        CardChangeMutator::isValid(Core::StaticDeckTemplate const & deck)
-        {
-            bool hasLegendary = false;
-            std::set<Core::Cards::Card> uniques;
-            if (this->cardDB[deck.getCommanderId()].rarity == Core::Cards::CardRarity::LEGENDARY) {
-                hasLegendary = true;
-            }
-            for(size_t i = 0; i < deck.getNumberOfNonCommanderCards(); i++) {
-                unsigned int const cardId = deck.getCardIdAtIndex(i);
-                Core::Cards::Card card = this->cardDB[cardId];
-                if (card.rarity == Core::Cards::CardRarity::LEGENDARY) {
-                    if (hasLegendary) {
-                        return false;
-                    } else {
-                        hasLegendary = true;
-                    }
-                } else if (card.rarity == Core::Cards::CardRarity::UNIQUE) {
-                    if (uniques.find(card) != uniques.end()) {
-                        return false;
-                    } else {
-                        uniques.insert(card);
-                    }
-                }
-            } // for
-            return true;
-        }
-
-        bool
-        CardChangeMutator::canCompose(Core::StaticDeckTemplate const & deck)
-        {
-            if (this->allowedCommanders.find(deck.getCommanderId()) == this->allowedCommanders.end()) {
-                return false;
-            }
-            std::multiset<unsigned int> cards;
-            for(size_t i = 0; i < deck.getNumberOfNonCommanderCards(); i++) {
-                unsigned int const cardId = deck.getCardIdAtIndex(i);
-                cards.insert(cardId);
-            }
-            return isSubSet(cards, this->allowedNonCommanderCards);
         }
 
     }

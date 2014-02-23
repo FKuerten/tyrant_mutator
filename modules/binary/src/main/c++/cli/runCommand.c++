@@ -23,7 +23,7 @@ namespace TyrantMutator {
         int RunCommand::execute() {
             Mutator::MutationResult r = this->mutator->mutate(this->task);
 
-            for(C::DeckTemplate::Ptr deck : r.decks) {
+            for(C::DeckTemplate::ConstPtr deck : r.decks) {
                 std::cout << std::string{*deck} << std::endl;
             }
             return 0;

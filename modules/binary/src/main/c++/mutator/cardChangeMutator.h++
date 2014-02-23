@@ -1,24 +1,26 @@
 #ifndef TYRANT_MUTATOR_MUTATOR_CARDCHANGEMUTATOR_HPP
 #define TYRANT_MUTATOR_MUTATOR_CARDCHANGEMUTATOR_HPP
 
-    #include <memory>
-    #include "mutator.h++"
-    #include <core/staticDeckTemplate.h++>
-    #include <set>
-    #include <core/cards/cardLoader.h++>
+    #include "abstractMutator.h++"
+    //#include <memory>
+    //#include <core/staticDeckTemplate.h++>
+    //#include <set>
+    //#include <core/cards/cardLoader.h++>
 
     namespace Tyrant {
         namespace Mutator {
 
-            class CardChangeMutator : public Mutator {
+            template<class Iterator>
+            class Generator;
+
+            class CardChangeMutator : public AbstractMutator
+                                    , public std::enable_shared_from_this<CardChangeMutator> {
                 public:
                     typedef std::shared_ptr<CardChangeMutator> Ptr;
+                    typedef std::shared_ptr<CardChangeMutator const> ConstPtr;
 
                 private:
                     bool aborted;
-                    Tyrant::Core::Cards::Cards cardDB;
-                    std::set<unsigned int> allowedCommanders;
-                    std::multiset<unsigned int> allowedNonCommanderCards;
 
                 public:
                     CardChangeMutator();
@@ -27,9 +29,6 @@
                     virtual void abort();
 
                 private:
-                    void initCardDB(Core::Cards::Cards const & cardDB);
-                    void buildAllowedCards(std::multiset<unsigned int> const & ownedCards);
-
                     void mutateOne(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
                     void mutateUnorder(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
                     void mutateChangeCommander(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
@@ -39,9 +38,8 @@
                     void mutateReplaceCard(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
                     void mutateOrder(MutationTask const & task, Core::StaticDeckTemplate const & baseDeck, DeckSet & mutations);
 
-                    bool isValid(Core::StaticDeckTemplate const & deck);
-                    bool canCompose(Core::StaticDeckTemplate const & deck);
-
+                template<class Iterator>
+                friend class Generator;
             };
 
         }

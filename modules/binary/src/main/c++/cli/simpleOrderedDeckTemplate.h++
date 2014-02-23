@@ -5,12 +5,11 @@
     #include <list>
     #include <core/staticDeckTemplate.h++>
     #include <visitor/acyclicVisitor.h++>
-
-    namespace C = Tyrant::Core;
+    
     namespace TyrantCache {
         namespace CLI {
 
-            class SimpleOrderedDeckTemplate : public C::StaticDeckTemplate {
+            class SimpleOrderedDeckTemplate : public Tyrant::Core::StaticDeckTemplate {
                 public:
                     typedef std::shared_ptr<SimpleOrderedDeckTemplate> Ptr;
                     CREATE_VISITOR_INTERFACE(SimpleOrderedDeckTemplate);
