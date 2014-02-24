@@ -36,7 +36,7 @@
                         STEP,
                     };
 
-                    typedef Core::DeckTemplate::Ptr result_type;
+                    typedef Core::DeckTemplate::Ptr value_type;
                 private: // variable
                     CardChangeMutator::ConstPtr mutator;
                     MutationTask const task;
@@ -51,7 +51,7 @@
                     unsigned int stage2Number;
                     unsigned int stage2NumberEnd;
 
-                    result_type nextResult;
+                    value_type nextResult;
                     bool _hasNext;
 
                 private: // methods
@@ -68,7 +68,7 @@
                 public:
                     CardChangeMutatorGenerator<Iterator> & operator++();
                     CardChangeMutatorGenerator<Iterator> const operator++(int);
-                    result_type operator*() const;
+                    value_type operator*() const;
 
                 friend bool operator==<>(CardChangeMutatorGenerator<Iterator> const & lhs, CardChangeMutatorGenerator<Iterator> const & rhs);
                 friend bool operator!=<>(CardChangeMutatorGenerator<Iterator> const & lhs, CardChangeMutatorGenerator<Iterator> const & rhs);

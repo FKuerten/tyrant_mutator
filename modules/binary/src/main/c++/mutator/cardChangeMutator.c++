@@ -10,6 +10,7 @@
 #include <string>
 #include "derefCompareLT.h++"
 #include "cardChangeMutatorGenerator.h++"
+#include "iterator/uniqueIterator.h++"
 
 namespace Tyrant {
     namespace Mutator {
@@ -31,28 +32,20 @@ namespace Tyrant {
                 typedef std::set<Core::StaticDeckTemplate::ConstPtr> SCDeckSet;
                 SCDeckSet input;
                 input.insert(baseDeck);
-                //std::clog << "before constructing generator" << std::endl;
-                //std::clog.flush();
-                //std::clog << "CCM::mutate() commanders: " << this->allowedCommanders.size() << std::endl;
                 Ptr thisPtr = shared_from_this();
                 CardChangeMutatorGenerator<SCDeckSet::const_iterator> generator(thisPtr, task, input.cbegin(), input.cend());
                 CardChangeMutatorGenerator<SCDeckSet::const_iterator> end(thisPtr, task, input.cend(), input.cend());
-                //std::clog << "after constructing generator" << std::endl;
-                //std::clog.flush();
+
+                typedef Praetorian::Basics::Iterator::UniqueIterator<CardChangeMutatorGenerator<SCDeckSet::const_iterator>> UniqueIterator;
+                UniqueIterator uniqueCurrent(generator, end);
+                UniqueIterator uniqueEnd(end, end);
+
                 CDeckSet mutations;
-                while(generator != end) {
-                    //std::clog << "get item ...";
-                    //std::clog.flush();
-                    Core::DeckTemplate::ConstPtr mutation = *generator;
-                    //std::clog << " got item ... ";
-                    //std::clog << std::string(*mutation);
-                    //std::clog << " inserting ...";
-                    //std::clog.flush();
+                while(uniqueCurrent != uniqueEnd && !(this->aborted)) {
+                    Core::DeckTemplate::ConstPtr mutation = *uniqueCurrent;
+                    //std::clog << "got one: " << std::string(*mutation) << std::endl;
                     mutations.insert(mutation);
-                    //std::clog << " done.";
-                    //std::clog << std::endl;
-                    //std::clog.flush();
-                    ++generator;
+                    ++uniqueCurrent;
                 }
                 MutationResult result;
                 result.decks = mutations;
@@ -65,7 +58,7 @@ namespace Tyrant {
         void
         CardChangeMutator::abort()
         {
-            throw LogicError("Not implemented.");
+            this->aborted = true;
         }
 
     }

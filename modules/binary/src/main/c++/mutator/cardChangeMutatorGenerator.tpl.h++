@@ -336,7 +336,7 @@ namespace Tyrant {
         }
 
         template <class Iterator>
-        typename CardChangeMutatorGenerator<Iterator>::result_type
+        typename CardChangeMutatorGenerator<Iterator>::value_type
         CardChangeMutatorGenerator<Iterator>::operator*() const
         {
             return this->nextResult;
