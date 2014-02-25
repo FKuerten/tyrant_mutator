@@ -8,6 +8,8 @@ namespace Tyrant {
         MutationTask::MutationTask()
         : mutationLevel{ONE_ROUND}
         , onlyAutoDecks{false}
+        , restrictToOwnedCards(true)
+        , allowExtraCards(0)
         {
         }
 

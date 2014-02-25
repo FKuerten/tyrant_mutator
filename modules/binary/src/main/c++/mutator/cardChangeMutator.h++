@@ -23,7 +23,6 @@
 
                     virtual void abort();
 
-                template<class Iterator>
                 friend class CardChangeMutatorGenerator;
             };
 

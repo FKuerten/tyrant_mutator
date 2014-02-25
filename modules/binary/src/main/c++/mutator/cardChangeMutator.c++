@@ -29,26 +29,16 @@ namespace Tyrant {
         {
             // We only mutate certain deck types
             if (Core::StaticDeckTemplate::ConstPtr baseDeck = std::dynamic_pointer_cast<Core::StaticDeckTemplate const>(task.baseDeck)) {
-                typedef std::set<Core::StaticDeckTemplate::ConstPtr> SCDeckSet;
-                SCDeckSet input;
+                CardChangeMutatorGenerator::CDeckSet input;
                 input.insert(baseDeck);
                 Ptr thisPtr = shared_from_this();
-                CardChangeMutatorGenerator<SCDeckSet::const_iterator> generator(thisPtr, task, input.cbegin(), input.cend());
-                CardChangeMutatorGenerator<SCDeckSet::const_iterator> end(thisPtr, task, input.cend(), input.cend());
+                CardChangeMutatorGenerator::Ptr generator = std::make_shared<CardChangeMutatorGenerator>(thisPtr, task, input);
+                CardChangeMutatorGenerator::Ptr end       = std::make_shared<CardChangeMutatorGenerator>(thisPtr, task, input, true);
 
-                typedef Praetorian::Basics::Iterator::UniqueIterator<CardChangeMutatorGenerator<SCDeckSet::const_iterator>> UniqueIterator;
-                UniqueIterator uniqueCurrent(generator, end);
-                UniqueIterator uniqueEnd(end, end);
+                DeckIterator uniqueCurrent(generator, end);
+                DeckIterator uniqueEnd(end, end);
 
-                CDeckSet mutations;
-                while(uniqueCurrent != uniqueEnd && !(this->aborted)) {
-                    Core::DeckTemplate::ConstPtr mutation = *uniqueCurrent;
-                    //std::clog << "got one: " << std::string(*mutation) << std::endl;
-                    mutations.insert(mutation);
-                    ++uniqueCurrent;
-                }
-                MutationResult result;
-                result.decks = mutations;
+                MutationResult result(uniqueCurrent, uniqueEnd);
                 return result;
             } else {
                 throw InvalidUserInputError("Not supported.");

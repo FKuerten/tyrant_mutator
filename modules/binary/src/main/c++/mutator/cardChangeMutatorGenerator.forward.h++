@@ -4,7 +4,6 @@
     namespace Tyrant {
         namespace Mutator {
 
-            template<class Iterator>
             class CardChangeMutatorGenerator;
 
         }

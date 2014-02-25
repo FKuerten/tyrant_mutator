@@ -1,5 +1,5 @@
-#ifndef TYRANT_MUTATOR_MUTATOR_MUTATOR_HPP
-#define TYRANT_MUTATOR_MUTATOR_MUTATOR_HPP
+#ifndef TYRANT_MUTATOR_MUTATOR_HPP
+    #define TYRANT_MUTATOR_MUTATOR_HPP
 
     #include <memory>
     #include "mutationTask.h++"
