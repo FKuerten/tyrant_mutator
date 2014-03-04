@@ -1,4 +1,6 @@
 load_makefile modules/binary
+load_makefile ../tyrant_cache
+load_makefile ../tyrant_optimize
 
 target/tyrantMutator: modules/binary/target/tyrantMutator
     @mkdir -p target
@@ -13,3 +15,83 @@ $(phony compile): target/tyrantMutator
 $(phony list_libraries): target/dependencies
     cat $(input)
 
+target/tyrantCache: ../tyrant_cache/target/tyrantCache
+    cp ${input} ${output}
+
+target/tyrant_optimize: ../tyrant_optimize/tyrant_optimize
+    cp ${input} ${output}
+
+./tyrant_optimize: target/tyrant_optimize
+    cp ${input} ${output}
+
+BASEDECK="BASE64RLEMINUS_ORDERED:TH-ERNg-ER+iv1-ERPl-ER+j"
+ENEMY="RAIDID:19"
+
+test.mutations: compile
+    ./target/tyrantMutator ${BASEDECK} > ${output}
+
+test.data : target/tyrantCache ./tyrant_optimize compile
+    ./target/tyrantMutator ${BASEDECK} \
+    | ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} -n 100 \
+    | tail -n+2 \
+    | awk -- '{ print $$1, $$6 / ($$3+$$4+$$5) }' \
+    > ${output}
+
+test.sorted: test.data
+    < ${input} \
+    sort -nr -k2 \
+    > ${output}
+
+test2.mutations: test.sorted
+    < ${input} \
+    head -n1000 \
+    | cut -f1 -d' ' \
+    > ${output}
+
+test2.data: test2.mutations
+    < ${input} \
+    ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} -n 1000 \
+    | tail -n+2 \
+    | awk -- '{ print $$1, $$6 / ($$3+$$4+$$5) }' \
+    > ${output}
+
+test2.sorted: test2.data
+    < ${input} \
+    sort -nr -k2 \
+    > ${output}
+
+test3.mutations: test2.sorted
+    < ${input} \
+    head -n100 \
+    | cut -f1 -d' ' \
+    > ${output}
+
+test3.data: test3.mutations
+    < ${input} \
+    ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} -n 10000 \
+    | tail -n+2 \
+    | awk -- '{ print $$1, $$6 / ($$3+$$4+$$5) }' \
+    > ${output}
+
+test3.sorted: test3.data
+    < ${input} \
+    sort -nr -k2 \
+    > ${output}
+
+test4.mutations: test3.sorted
+    < ${input} \
+    head -n20 \
+    | cut -f1 -d' ' \
+    > ${output}
+
+test4.data: test4.mutations
+    < ${input} \
+    ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} -n 100000 \
+    | tail -n+2 \
+    | awk -- '{ print $$1, $$6 / ($$3+$$4+$$5) }' \
+    > ${output}
+
+test4.sorted: test4.data
+    < ${input} \
+    sort -nr -k2 \
+    > ${output}
