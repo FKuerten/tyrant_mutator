@@ -3,11 +3,12 @@
 
     #include "mutatingIterator.h++"
     #include "iterator/uniqueIterator.h++"
+    #include "derefCompareLT.h++"
 
     namespace Tyrant {
         namespace Mutator {
 
-            typedef Praetorian::Basics::Iterator::UniqueIterator<MutatingIterator> DeckIterator;
+            typedef Praetorian::Basics::Iterator::UniqueIterator<MutatingIterator, DerefCompareLT> DeckIterator;
 
             struct MutationResult {
                 //CDeckSet decks;
