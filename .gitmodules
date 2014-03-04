@@ -4,3 +4,6 @@
 [submodule "modules/basics"]
 	path = modules/basics
 	url = git@github.com:Pr4370r14n/praetorian-basics.git
+[submodule "modules/core"]
+	path = modules/core
+	url = git@github.com:Pr4370r14n/tyrant-core.git
