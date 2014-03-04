@@ -148,23 +148,45 @@ namespace Tyrant {
 
         template <class T>
         bool isSubSet(std::multiset<T> const & sub
-                     ,std::multiset<T> copyOfSuper
+                     ,std::multiset<T> const & super
                      ,unsigned int allowUpToExtra = 0
                      )
         {
-            for(auto iter = sub.begin()
-               ;iter != sub.end()
-               ;iter++)
+            auto subIter = sub.cbegin();
+            auto subEnd = sub.cend();
+            auto supIter = super.cbegin();
+            auto supEnd = super.cend();
+            // iterate over subset
+            while(subIter != subEnd)
             {
-                auto superIter = copyOfSuper.find(*iter);
-                if(superIter == copyOfSuper.end()) {
+                bool failed;
+                if(supIter == supEnd) {
+                    // none left in super? fail!
+                    failed = true;
+                } else {
+                    T const & subItem = *subIter;
+                    T const & supItem = *supIter;
+                    if (subItem < supItem) {
+                        // element in super already larger? fail!
+                        failed = true;
+                    } else if (subItem > supItem) {
+                        // element in super smaller, keep looking
+                        ++supIter;
+                        failed = false;
+                    } else {
+                        // elements equal
+                        ++subIter;
+                        ++supIter;
+                        failed = false;
+                    }
+                }
+
+                if(failed) {
                     if(allowUpToExtra > 0) {
                         allowUpToExtra--;
                     } else {
                         return false;
                     }
-                } else {
-                    copyOfSuper.erase(superIter);
                 }
             }
             return true;
