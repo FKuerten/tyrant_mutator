@@ -109,7 +109,9 @@ namespace Tyrant {
                     this->allowedCommanders.insert(card.id);
                 } else {
                     this->allowedNonCommanderCards.insert(card.id);
-                    this->allowedNonCommanderCardsWithCount.insert(card.id);
+                    if (this->allowedNonCommanderCardsWithCount.count(card.id) < 10) {
+                        this->allowedNonCommanderCardsWithCount.insert(card.id);
+                    }
                 }
             }
             //std::clog << this->allowedCommanders.size() << " "
