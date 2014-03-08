@@ -7,3 +7,6 @@
 [submodule "modules/core"]
 	path = modules/core
 	url = git@github.com:Pr4370r14n/tyrant-core.git
+[submodule "modules/mutator"]
+	path = modules/mutator
+	url = git@github.com:Pr4370r14n/tyrant-mutator.git
