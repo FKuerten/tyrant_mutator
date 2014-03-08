@@ -9,7 +9,7 @@
 
     // for specific decks casting
     #include <core/autoDeckTemplate.h++>
-    #include "../cli/simpleOrderedDeckTemplate.h++"
+    #include <core/simpleOrderedDeckTemplate.h++>
 
     namespace Tyrant {
         namespace Mutator {
@@ -39,7 +39,7 @@
                     bool canCompose(Core::StaticDeckTemplate const & deck) const;
 
                     static bool isOrdered(Core::StaticDeckTemplate const & deck);
-                    static TyrantCache::CLI::SimpleOrderedDeckTemplate::Ptr asOrdered(Core::StaticDeckTemplate const & orig);
+                    static Core::SimpleOrderedDeckTemplate::Ptr asOrdered(Core::StaticDeckTemplate const & orig);
                     static Core::AutoDeckTemplate::Ptr asUnordered(Core::StaticDeckTemplate const & orig);
 
             };

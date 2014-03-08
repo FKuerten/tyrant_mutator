@@ -3,7 +3,7 @@
 #include "configuration.h++"
 #include <iomanip>
 #include <errorHandling/exceptions.h++>
-#include "../mutator/mutationResult.h++"
+#include <mutator/mutationResult.h++>
 
 namespace C = Tyrant::Core;
 namespace TyrantMutator {

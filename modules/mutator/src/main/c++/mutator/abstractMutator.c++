@@ -212,7 +212,7 @@ namespace Tyrant {
             // dirty code
             if (dynamic_cast<Core::AutoDeckTemplate const *>(&deck) != NULL) {
                 return false;
-            } else if (dynamic_cast<TyrantCache::CLI::SimpleOrderedDeckTemplate const *>(&deck) != NULL) {
+            } else if (dynamic_cast<Core::SimpleOrderedDeckTemplate const *>(&deck) != NULL) {
                 return true;
             } else {
                 assertX(false);
@@ -231,7 +231,7 @@ namespace Tyrant {
             return Core::AutoDeckTemplate::Ptr(new Core::AutoDeckTemplate(cards));
         }
 
-        TyrantCache::CLI::SimpleOrderedDeckTemplate::Ptr
+        Core::SimpleOrderedDeckTemplate::Ptr
         AbstractMutator::asOrdered(Core::StaticDeckTemplate const & orig)
         {
             std::list<unsigned int> cards;
@@ -239,8 +239,8 @@ namespace Tyrant {
             for(size_t i = 0; i < orig.getNumberOfNonCommanderCards(); i++) {
                 cards.push_back(orig.getCardIdAtIndex(i));
             }
-            return TyrantCache::CLI::SimpleOrderedDeckTemplate::Ptr(
-                new TyrantCache::CLI::SimpleOrderedDeckTemplate(cards)
+            return Core::SimpleOrderedDeckTemplate::Ptr(
+                new Core::SimpleOrderedDeckTemplate(cards)
             );
         }
 

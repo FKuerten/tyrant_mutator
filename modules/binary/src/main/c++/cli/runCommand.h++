@@ -3,8 +3,8 @@
 
     #include "commands.h++"
     #include <memory>
-    #include "../mutator/mutator.h++"
-    #include "../mutator/mutationTask.h++"
+    #include <mutator/mutator.h++>
+    #include <mutator/mutationTask.h++>
 
     using namespace Tyrant;
     namespace TyrantMutator {

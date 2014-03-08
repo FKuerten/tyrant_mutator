@@ -2,7 +2,7 @@
 
 #include <list>
 #include <core/autoDeckTemplate.h++>
-#include "simpleOrderedDeckTemplate.h++"
+#include <core/simpleOrderedDeckTemplate.h++>
 #include <errorHandling/assert.h++>
 #include <core/missionIdDeckTemplate.h++>
 #include <core/raidDeckTemplate.h++>
@@ -44,7 +44,7 @@ namespace TyrantCache {
             if (!ordered) {
                 return C::DeckTemplate::Ptr( new C::AutoDeckTemplate(ids) );
             } else {
-                return C::DeckTemplate::Ptr( new SimpleOrderedDeckTemplate(ids) );
+                return C::DeckTemplate::Ptr( new C::SimpleOrderedDeckTemplate(ids) );
             }
         }
 
@@ -147,7 +147,7 @@ namespace TyrantCache {
             if (!ordered) {
                 return C::DeckTemplate::Ptr( new C::AutoDeckTemplate(ids) );
             } else {
-                return C::DeckTemplate::Ptr( new SimpleOrderedDeckTemplate(ids) );
+                return C::DeckTemplate::Ptr( new C::SimpleOrderedDeckTemplate(ids) );
             }
         }
 

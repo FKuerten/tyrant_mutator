@@ -1,9 +1,9 @@
 # Configuration section
-MODULE_NAME=tyrantMutator
-DEPENDENCIES=basics core mutator
-LIBS:=-lboost_program_options -lpugixml -lboost_regex
+MODULE_NAME=mutator
+DEPENDENCIES=basics core
+LIBS:=
 CXXFLAGS+= --std=c++11
-
+ARFLAGS:=crvs
 
 # Automatic section
 INCLUDEDIRS:=${MODULEDIR}/target/generated

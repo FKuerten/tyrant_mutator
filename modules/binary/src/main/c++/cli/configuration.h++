@@ -1,7 +1,7 @@
 #ifndef TYRANT_MUTATOR_CLI_CONFIGURATION_HPP
     #define TYRANT_MUTATOR_CLI_CONFIGURATION_HPP
 
-    #include "../mutator/mutator.h++"
+    #include <mutator/mutator.h++>
 
     namespace TyrantMutator {
         namespace CLI {

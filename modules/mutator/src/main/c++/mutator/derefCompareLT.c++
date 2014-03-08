@@ -1,6 +1,6 @@
 #include "derefCompareLT.h++"
 #include <core/autoDeckTemplate.h++>
-#include "../cli/simpleOrderedDeckTemplate.h++"
+#include <core/simpleOrderedDeckTemplate.h++>
 
 namespace Tyrant {
     namespace Mutator {
@@ -23,11 +23,11 @@ namespace Tyrant {
                     return true;
                 }
             }
-            TyrantCache::CLI::SimpleOrderedDeckTemplate const * const sa
-                = dynamic_cast<TyrantCache::CLI::SimpleOrderedDeckTemplate const *>(&a);
+            Core::SimpleOrderedDeckTemplate const * const sa
+                = dynamic_cast<Core::SimpleOrderedDeckTemplate const *>(&a);
             if (sa != NULL) {
-                TyrantCache::CLI::SimpleOrderedDeckTemplate const * const sb
-                    = dynamic_cast<TyrantCache::CLI::SimpleOrderedDeckTemplate const *>(&b);
+                Core::SimpleOrderedDeckTemplate const * const sb
+                    = dynamic_cast<Core::SimpleOrderedDeckTemplate const *>(&b);
                 if (sb != NULL) {
                     return (*sa) < (*sb);
                 } else {
