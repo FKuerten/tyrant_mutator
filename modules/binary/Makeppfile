@@ -1,36 +1,3 @@
-MODULEDIR=.
-include config.mk
+makepp_no_builtin = 1
 
-PROJECT_NAME=${MODULE_NAME}
-include scripts/objectsMakeppfile.mk
-include scripts/version.mk
-
-$(phony FORCE):
-    @true
-
-LIBS+=$(addprefix -l,${DEPENDENCIES})
-LDFLAGS+=-L${CURDIR}/../${DEPENDENCIES}/target/
-OWN_LIB_FILES=$(shell ./scripts/expandModules.sh ${DEPENDENCIES})
-iftrue ${DEPENDENCIES}
-	DEPENDENCY_FILES:=${CURDIR}/../${DEPENDENCIES}/target/dependencies
-	DEPLIBS=$(shell cat ${DEPENDENCY_FILES})
-else
-	DEPENDENCY_FILES:=
-	DEPLIBS:=
-endif
-
-load_makefile target/objects/Makeppfile
-load_makefile ${CURDIR}/../${DEPENDENCIES}
-
-OBJECTS:=$(shell ./scripts/findObjects.sh)
-ALLLIBS=${LIBS} ${DEPLIBS}
-
-target/tyrantMutator: $(infer_objects target/objects/cli/main.o++, ${OBJECTS}) ${OWN_LIB_FILES} ${DEPENDENCY_FILES}
-	@if [ -e ${output} ]; then rm ${output}; echo "rm ${output}"; fi
-	${CXX} ${LDFLAGS} \
-	       $(infer_objects target/objects/cli/main.o++, ${OBJECTS}) \
-	       ${ALLLIBS} \
-	       -o ${output}
-
-target/dependencies: ${DEPENDENCY_FILES}
-    echo ${ALLLIBS} > ${output}
+include scripts/binary.mk
