@@ -57,7 +57,7 @@ namespace TyrantMutator {
                     throw InvalidUserInputError("Need a deck to mutate.");
                 }
 
-                configuration.verbosity = vm.count("verbose");
+                configuration.verbosity = static_cast<int>(vm.count("verbose"));
 
                 RunCommand::Ptr command = RunCommand::Ptr(
                     new RunCommand(configuration)

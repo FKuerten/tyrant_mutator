@@ -3,7 +3,7 @@
 #include "configuration.h++"
 #include <iomanip>
 #include <errorHandling/exceptions.h++>
-#include "../mutator/mutationResult.h++"
+#include <mutator/mutationResult.h++>
 
 namespace C = Tyrant::Core;
 namespace TyrantMutator {
@@ -23,9 +23,11 @@ namespace TyrantMutator {
         int RunCommand::execute() {
             Mutator::MutationResult r = this->mutator->mutate(this->task);
 
-            for(C::DeckTemplate::Ptr deck : r.decks) {
-                std::cout << std::string{*deck} << std::endl;
+            for(Tyrant::Mutator::DeckIterator iter = r.begin; iter != r.end; ++iter) {
+                Core::DeckTemplate::ConstPtr deck = *iter;
+                std::cout << std::string(*deck) << std::endl;
             }
+            //std::clog << "done with execute" << std::endl;
             return 0;
         }
 

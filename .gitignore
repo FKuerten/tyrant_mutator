@@ -5,3 +5,7 @@
 /missions.xml
 /raids.xml
 /quests.xml
+/test*.data
+/test*.mutations
+/test*.sorted
+/tyrant_optimize

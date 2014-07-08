@@ -1,6 +1,8 @@
 load_makefile modules/binary
+load_makefile ../tyrant_cache
+load_makefile ../tyrant_optimize
 
-target/tyrantMutator: modules/binary/target/tyrantMutator
+target/tyrantMutator: modules/binary/target/tyrantMutator-static-debug
     @mkdir -p target
     cp ${input} ${output}
 
@@ -13,3 +15,11 @@ $(phony compile): target/tyrantMutator
 $(phony list_libraries): target/dependencies
     cat $(input)
 
+target/tyrantCache: ../tyrant_cache/target/tyrantCache
+    cp ${input} ${output}
+
+target/tyrant_optimize: ../tyrant_optimize/tyrant_optimize
+    cp ${input} ${output}
+
+./tyrant_optimize: target/tyrant_optimize
+    cp ${input} ${output}

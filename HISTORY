@@ -1,0 +1,7 @@
+This file belongs to TyrantMutator (the cli wrapper, but it applies to the whole family).
+
+This project is a fork of IterateDecks (not in the git sense).
+It was created in february 2014 because the time requirements to maintain IterateDecks were too much.
+
+TyrantMutator consists of some libraries and a cli wrapper, most of this is a copied from my modifications to Iteratedecks, however there also have been a lot of redesigns and improvements.
+The libraries and this cli wrapper were developed at the same time.

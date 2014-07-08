@@ -1,5 +1,5 @@
 #include "configuration.h++"
-#include "../mutator/cardChangeMutator.h++"
+#include <mutator/cardChangeMutator.h++>
 
 namespace TyrantMutator {
     namespace CLI {
