@@ -48,14 +48,33 @@ namespace TyrantCache {
             }
         }
 
-        // Still old NETRAT code...
-        unsigned int base64ToId(unsigned short const base64)
-        {
-            #define DecodeBase64(x) (((x >= 'A') && (x <= 'Z')) ? (x - 'A') : (((x >= 'a') && (x <= 'z')) ? (x - 'a' + 26) : (((x >= '0') && (x <= '9')) ? (x - '0' + 52) : ((x == '+') ? (62) : (63)))))
-            // same stuff as with ID2BASE64, hi and lo swapped
-            return DecodeBase64((base64 & 0xFF)) + DecodeBase64((base64 >> 8)) * 64;
+        unsigned short base64CharToNumber(char base64Char) {
+            if (base64Char >= 'A' && base64Char <= 'Z') {
+                return static_cast<unsigned short>(base64Char - 'A');
+            } else if (base64Char >= 'a' && base64Char <= 'z') {
+                return static_cast<unsigned short>(base64Char - 'a' + 26);
+            } else if (base64Char >= '0' && base64Char <= '9') {
+                return static_cast<unsigned short>(base64Char - '0' + 52);
+            } else if (base64Char == '+') {
+                return 62u;
+            } else if (base64Char == '/') {
+                return 63u;
+            } else {
+                std::stringstream ssMessage;
+                ssMessage << "Unexpected char is not base64: "
+                          << std::hex << static_cast<int>(base64Char)
+                          << "." << std::endl;
+                throw InvalidUserInputError(ssMessage.str());
+            }
         }
 
+        unsigned int base64ToId(char first, char second)
+        {
+            // NETRAT said: hi and lo swapped
+            //char const high = static_cast<char>((base64 >> 8) && 0xFF);
+            //char const low = static_cast<char>(base64 & 0xFF);
+            return base64CharToNumber(first) * 64u + base64CharToNumber(second);
+        }
         unsigned long const CARD_MAX_ID = 5000u;
 
         std::list<unsigned int>
@@ -83,8 +102,8 @@ namespace TyrantCache {
                 }
                 assertX(i + 1u < len); // make sure we have a full hash
                 //std::clog << "reading characters '" << hash[i] << hash[i+1] << "' ";
-                unsigned short cardHash = (hash[i] << 8) + hash[i + 1];
-                tid += base64ToId(cardHash);
+                //unsigned short cardHash = static_cast<unsigned short>((hash[i] << 8) + hash[i + 1]);
+                tid += base64ToId(hash[i], hash[i+1]);
                 //std::clog << "tid is " << tid << std::endl;
                 if (i==0) {
                     // first card is commander
