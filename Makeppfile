@@ -24,15 +24,15 @@ target/tyrant_optimize: ../tyrant_optimize/tyrant_optimize
 ./tyrant_optimize: target/tyrant_optimize
     cp ${input} ${output}
 
-BASEDECK="BASE64RLEMINUS_ORDERED:TH-ERNg-ER+iv1-ERPl-ER+j"
-ENEMY="RAIDID:19"
+BASEDECK="BASE64RLEMINUS_ORDERED:SB-Az+mv5Jw-Az+i"
+ENEMY="MISSIONID:395"
 
 test.mutations: compile
     ./target/tyrantMutator ${BASEDECK} > ${output}
 
 test.data : target/tyrantCache ./tyrant_optimize compile
     ./target/tyrantMutator ${BASEDECK} \
-    | ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} -n 100 \
+    | ./target/tyrantCache --attacker-from-stdin --defender ${ENEMY} --surge --battlgeround -n 100 \
     | tail -n+2 \
     | awk -- '{ print $$1, $$6 / ($$3+$$4+$$5) }' \
     > ${output}
