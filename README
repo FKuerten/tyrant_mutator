@@ -1,0 +1,5 @@
+This is TyrantMutator, a cli wrapper for the library tyrant-mutator.
+
+This cli wrapper provides access to the library tyrant-mutator.
+The "--version" switch will give you information on the version of the cli wrapper.
+The "--help" switch will list all options.
